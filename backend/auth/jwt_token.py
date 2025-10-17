@@ -1,4 +1,4 @@
-#auth\token.py
+# auth/jwt_token
 from datetime import datetime, timedelta, timezone
 import os
 from jose import jwt, JWTError

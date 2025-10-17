@@ -1,9 +1,10 @@
+# routes/user_modules/login
 from fastapi import APIRouter, HTTPException, status
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 from tortoise.contrib.pydantic import pydantic_model_creator
 from datetime import timedelta
-from backend.auth.auth import create_access_token, authenticate_user
+from backend.auth.user_auth import create_access_token, authenticate_user
 from backend.models.users import User
 import os
 
@@ -64,8 +65,6 @@ POST
 async def login(request: LoginRequest):
     try:
         user = await authenticate_user(request.login, request.password)
-
-        # Создание токена
         try:
             expires_minutes = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 60))
             access_token = create_access_token(

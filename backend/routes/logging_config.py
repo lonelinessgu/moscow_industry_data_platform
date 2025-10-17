@@ -1,4 +1,4 @@
-# routes/logging_config.py
+# routes/logging_config
 from fastapi.routing import APIRoute
 
 

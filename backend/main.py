@@ -1,4 +1,4 @@
-# backend/main.py
+# main
 import uvicorn
 import logging
 from fastapi import FastAPI

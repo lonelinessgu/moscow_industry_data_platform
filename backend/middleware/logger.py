@@ -1,11 +1,10 @@
-# backend/middleware/logger.py
+# middleware/logger
 import logging
 import time
 import os
 from collections import Counter
 from pathlib import Path
 from fastapi import Request
-# Добавим импорт для проверки типа ответа
 from starlette.responses import FileResponse, StreamingResponse
 
 PROJECT_ROOT = Path(__file__).parents[2]
