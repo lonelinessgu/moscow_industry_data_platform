@@ -1,0 +1,81 @@
+services:
+  # === Traefik Reverse Proxy ===
+  traefik:
+    image: traefik:v2.9
+    container_name: traefik
+    command:
+      - --configFile=/traefik.yml
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./traefik.yml:/traefik.yml
+      - ./acme.json:/acme.json
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - web
+
+  # === Backend API Service ===
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.backend
+    expose:
+      - "5000"
+    environment:
+      - APP_ENV=development
+    restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-api.rule=Host(`lonelinessgu.space`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-api.entrypoints=websecure"
+      - "traefik.http.routers.backend-api.tls=true"
+      - "traefik.http.routers.backend-api.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.backend-api.service=backend-service"
+      - "traefik.http.routers.backend-ws.rule=Host(`lonelinessgu.space`) && PathPrefix(`/ws`)"
+      - "traefik.http.routers.backend-ws.entrypoints=websecure"
+      - "traefik.http.routers.backend-ws.tls=true"
+      - "traefik.http.routers.backend-ws.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.backend-ws.service=backend-service"
+      - "traefik.http.routers.backend-ws.middlewares=ws-upgrade-headers@docker"
+      - "traefik.http.services.backend-service.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.ws-upgrade-headers.headers.customrequestheaders.Connection=upgrade"
+      - "traefik.http.middlewares.ws-upgrade-headers.headers.customrequestheaders.Upgrade=websocket"
+      - "traefik.http.middlewares.ws-upgrade-headers.headers.customrequestheaders.X-Forwarded-Host=lonelinessgu.space"
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+
+  # === Frontend SPA Service ===
+  frontend:
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    expose:
+      - "80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`lonelinessgu.space`) && !PathPrefix(`/api`) && !PathPrefix(`/ws`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.frontend.service=frontend-service"
+      - "traefik.http.services.frontend-service.loadbalancer.server.port=80"
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+
+# === Сети ===
+networks:
+  web:
+    driver: bridge

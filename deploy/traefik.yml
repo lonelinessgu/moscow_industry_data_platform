@@ -1,0 +1,24 @@
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+http:
+  providers:
+    docker:
+      endpoint: "unix:///var/run/docker.sock"
+      exposedByDefault: false
+
+certificatesResolvers:
+  letsencryptresolver:
+    acme:
+      email: temiksp@gmail.com
+      storage: /acme.json
+      httpChallenge:
+        entryPoint: web

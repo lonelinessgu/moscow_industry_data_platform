@@ -1,0 +1,16 @@
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+*.log
+*.tmp
+*.swp
+*.pyc
+__pycache__
+node_modules
+venv
+dist/
+build/
+*.tar.gz
+*.zip
