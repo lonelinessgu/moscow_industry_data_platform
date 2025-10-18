@@ -6,6 +6,10 @@ from fastapi import FastAPI
 from backend.ignore_config import setup_logging
 setup_logging()
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from backend.lifespan import lifespan
 from backend.middleware.logger import log_requests
 from backend.middleware.cors import make_cors_middleware

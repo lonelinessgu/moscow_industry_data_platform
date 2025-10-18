@@ -11,10 +11,13 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Конфигурация маршрутов
+const GuestPage = React.lazy(() => import("./pages/GuestPage"));
+
 const routeConfig = [
-  { path: "/login", component: lazy(() => import("./pages/LoginIn")), protected: false },
+  { path: "/", component: GuestPage, protected: false },
   { path: "/logout", component: lazy(() => import("./pages/LogOut")), protected: false },
-  { path: "/", component: lazy(() => import("./pages/Main")), protected: true },
+  { path: "/main", component: lazy(() => import("./pages/Main")), protected: true },
+  { path: "/form", component: lazy(() => import("./pages/FormPage")), protected: true },
   { path: "/create", component: lazy(() => import("./pages/CreateNewUser")), protected: true, allowedRoles: ['admin'] },
 ];
 
@@ -22,11 +25,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/" />;
+    return <Navigate to="/main" />;
   }
 
   return children;
@@ -34,7 +37,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const LoginRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/" /> : children;
+  return isAuthenticated ? <Navigate to="/main" /> : children;
 };
 
 // Функция для создания маршрута
