@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserPlus, FaSignOutAlt, FaFileAlt, FaCheckCircle, FaUsers, FaShieldAlt } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext'; // Путь к вашему AuthContext
+import { FaUserPlus, FaSignOutAlt, FaFileAlt, FaCheckCircle, FaUsers, FaShieldAlt, FaUpload } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 export default function MainPage() {
     const navigate = useNavigate();
@@ -21,6 +21,13 @@ export default function MainPage() {
             icon: FaFileAlt,
             color: "bg-green-500 hover:bg-green-600",
             shadow: "shadow-green-200"
+        },
+        {
+            label: "Загрузка файла",
+            navigate_to: "/upload",
+            icon: FaUpload,
+            color: "bg-purple-500 hover:bg-purple-600",
+            shadow: "shadow-purple-200"
         },
         {
             label: "Выйти",

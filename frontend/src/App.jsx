@@ -18,6 +18,7 @@ const routeConfig = [
   { path: "/logout", component: lazy(() => import("./pages/LogOut")), protected: false },
   { path: "/main", component: lazy(() => import("./pages/Main")), protected: true },
   { path: "/form", component: lazy(() => import("./pages/FormPage")), protected: true },
+  { path: "/upload", component: lazy(() => import("./pages/FileUploadPage")), protected: true },
   { path: "/create", component: lazy(() => import("./pages/CreateNewUser")), protected: true, allowedRoles: ['admin'] },
 ];
 

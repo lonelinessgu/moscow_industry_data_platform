@@ -1,25 +1,27 @@
-x-timezone: &timezone
-  TZ: Europe/Moscow
-
 services:
+  # === Traefik Reverse Proxy ===
   traefik:
     image: traefik:v2.9
     container_name: traefik
     command:
-      - --configFile=/etc/traefik/traefik.yml
+      - --configFile=/traefik.yml
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik.yml:/traefik.yml
       - ./acme.json:/acme.json
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     networks:
       - web
-    environment:
-      <<: *timezone
+    labels:
+      # Middleware: увеличиваем лимит тела запроса до 100 МБ
+      - "traefik.http.middlewares.large-body.buffering.maxRequestBodyBytes=104857600"  # 100 МБ
+      - "traefik.http.middlewares.large-body.buffering.maxResponseBodyBytes=104857600"
+      - "traefik.http.middlewares.large-body.buffering.retryExpression=isNetworkError() || responseStatusCode() == 429"
 
+  # === Backend API Service ===
   backend:
     container_name: backend
     build:
@@ -28,33 +30,23 @@ services:
     expose:
       - "5000"
     environment:
-      <<: *timezone
-      DB_DATA_DIR: /data
-      LOGS_DIR: /logs
+      - APP_ENV=development
     restart: unless-stopped
     networks:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend-api.rule=Host(`lonelinessgu.space`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-api.entrypoints=websecure"
-      - "traefik.http.routers.backend-api.tls=true"
-      - "traefik.http.routers.backend-api.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.backend-api.service=backend-service"
-      - "traefik.http.routers.backend-ws.rule=Host(`lonelinessgu.space`) && PathPrefix(`/ws`)"
-      - "traefik.http.routers.backend-ws.entrypoints=websecure"
-      - "traefik.http.routers.backend-ws.tls=true"
-      - "traefik.http.routers.backend-ws.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.backend-ws.service=backend-service"
-      - "traefik.http.routers.backend-ws.middlewares=ws-upgrade-headers@docker"
-      - "traefik.http.services.backend-service.loadbalancer.server.port=5000"
-      - "traefik.http.middlewares.ws-upgrade-headers.headers.customrequestheaders.Connection=upgrade"
-      - "traefik.http.middlewares.ws-upgrade-headers.headers.customrequestheaders.Upgrade=websocket"
-      - "traefik.http.middlewares.ws-upgrade-headers.headers.customrequestheaders.X-Forwarded-Host=lonelinessgu.space"
+      - "traefik.http.routers.backend.rule=Host(`lonelinessgu.space`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencryptresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+      # Применяем middleware для увеличения лимита загрузки
+      - "traefik.http.routers.backend.middlewares=large-body"
     volumes:
-      - ./data:/data
-      - ./logs:/logs
+      - ./data:/app/data
+      - ./logs:/app/logs
 
+  # === Frontend SPA Service ===
   frontend:
     container_name: frontend
     build:
@@ -63,24 +55,21 @@ services:
     expose:
       - "80"
     restart: unless-stopped
+    depends_on:
+      - backend
     networks:
       - web
-    environment:
-      <<: *timezone
-      DB_DATA_DIR: /data
-      LOGS_DIR: /logs
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`lonelinessgu.space`) && !PathPrefix(`/api`) && !PathPrefix(`/ws`)"
+      - "traefik.http.routers.frontend.rule=Host(`lonelinessgu.space`, `www.lonelinessgu.space`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.frontend.service=frontend-service"
-      - "traefik.http.services.frontend-service.loadbalancer.server.port=80"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     volumes:
-      - ./data:/data
-      - ./logs:/logs
+      - ./data:/app/data
+      - ./logs:/app/logs
 
+# === Сети ===
 networks:
   web:
     driver: bridge

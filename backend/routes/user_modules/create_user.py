@@ -7,7 +7,7 @@ from backend.auth.add_users import handle_create_user_request
 from backend.models.users import User
 from typing import Any
 
-router = APIRouter()
+create_user_router = APIRouter()
 
 # Создаем базовую модель с помощью pydantic_model_creator
 BaseCreateUserRequest = pydantic_model_creator(
@@ -34,7 +34,7 @@ class CreateUserRequest(BaseCreateUserRequest):
             raise ValueError(f"Недопустимая роль. Допустимые значения: {valid_roles}")
 
 
-@router.post("/create_user",
+@create_user_router.post("/create_user",
     response_model=dict,
     responses={
         200: {"description": "Успешное создание пользователя"},

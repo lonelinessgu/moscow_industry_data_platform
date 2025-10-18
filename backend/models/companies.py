@@ -2,7 +2,7 @@ from tortoise import fields, models
 
 class Company(models.Model):
     id = fields.IntField(pk=True, generated=True)
-    inn = fields.CharField(max_length=20, null=True)
+    inn = fields.CharField(max_length=40, null=True)
     name = fields.TextField(null=True)
     full_name = fields.TextField(null=True)
     status = fields.CharField(max_length=50, null=True)
@@ -17,7 +17,7 @@ class Company(models.Model):
     registration_date = fields.DateField(null=True)
     director = fields.CharField(max_length=255, null=True)
     head_company = fields.CharField(max_length=255, null=True)
-    head_company_inn = fields.CharField(max_length=20, null=True)
+    head_company_inn = fields.CharField(max_length=40, null=True)
     director_contacts = fields.TextField(null=True)
     employee_contacts = fields.TextField(null=True)
     cs_responsible_contacts = fields.TextField(null=True)

@@ -10,10 +10,17 @@ entryPoints:
     address: ":443"
 
 http:
-  providers:
-    docker:
-      endpoint: "unix:///var/run/docker.sock"
-      exposedByDefault: false
+  middlewares:
+    large-body:
+      buffering:
+        maxRequestBodyBytes: 104857600  # 100 МБ
+        maxResponseBodyBytes: 104857600
+        retryExpression: isNetworkError() || responseStatusCode() == 429
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
 
 certificatesResolvers:
   letsencryptresolver:

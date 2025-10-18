@@ -20,6 +20,17 @@ const FormPage = () => {
   });
 
   const [years, setYears] = useState(['2021', '2022', '2023', '2024']);
+  const [templateFormat, setTemplateFormat] = useState('pdf');
+
+  const cycleFormat = () => {
+    if (templateFormat === 'pdf') {
+      setTemplateFormat('excel');
+    } else if (templateFormat === 'excel') {
+      setTemplateFormat('word');
+    } else {
+      setTemplateFormat('pdf');
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -51,6 +62,22 @@ const FormPage = () => {
   const addYear = () => {
     const newYear = (parseInt(years[years.length - 1]) + 1).toString();
     setYears(prev => [...prev, newYear]);
+  };
+
+  const downloadTemplate = () => {
+    let fileName;
+    if (templateFormat === 'pdf') {
+      fileName = 'шаблон_КП.pdf';
+    } else if (templateFormat === 'excel') {
+      fileName = 'шаблон_КП.xlsx';
+    } else {
+      fileName = 'шаблон_КП.docx';
+    }
+    // В Vite используем /public как корень для статических файлов
+    const link = document.createElement('a');
+    link.href = `/${fileName}`;
+    link.download = fileName;
+    link.click();
   };
 
   const renderYearlyFields = (label, field) => (
@@ -184,9 +211,24 @@ const FormPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-green-600 via-gray-400 to-gray-700 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Регистрация организации
-          </h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">
+              Регистрация организации
+            </h1>
+           <div className="flex items-center space-x-4">
+                <div
+                  onClick={cycleFormat}
+                  className="px-4 py-2 text-black rounded-lg border border-blue-200 cursor-pointer select-none hover:bg-blue-50 hover:shadow-sm transition-all duration-200 min-w-[80px] text-center"
+                >
+                  {templateFormat.toUpperCase()}
+                </div>
+              <button
+                onClick={downloadTemplate}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                Скачать шаблон
+              </button>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {generalFields.map(([name, label, type, hasYears]) => (

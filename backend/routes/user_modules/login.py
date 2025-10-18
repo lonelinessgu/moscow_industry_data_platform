@@ -8,7 +8,7 @@ from backend.auth.user_auth import create_access_token, authenticate_user
 from backend.models.users import User
 import os
 
-router = APIRouter()
+login_router = APIRouter()
 security = HTTPBearer()
 
 
@@ -31,7 +31,7 @@ class LoginResponse(BaseModel):
     message: str = "Успешная авторизация"
 
 
-@router.post(
+@login_router.post(
     "/login",
     response_model=LoginResponse,
     responses={

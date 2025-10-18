@@ -2,13 +2,16 @@
 from fastapi import APIRouter
 from fastapi.routing import APIRoute
 
-from backend.routes.user_modules.login import router as login_router
-from backend.routes.user_modules.create_user import router as create_user_router
+from backend.routes.user_modules.login import login_router
+from backend.routes.user_modules.create_user import create_user_router
+from backend.routes.files_modules.upload import upload_router
 
 api_router = APIRouter(prefix="/api")
 
 api_router.include_router(login_router, tags=["user_modules"])
 api_router.include_router(create_user_router, tags=["user_modules"])
+
+api_router.include_router(upload_router, tags=["files_modules"])
 
 #Улучшение читаемости документации путём хуманизации тегов и упразднения повторов
 def add_route_tags(router: APIRouter):
