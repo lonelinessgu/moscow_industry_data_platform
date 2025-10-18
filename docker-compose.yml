@@ -1,22 +1,25 @@
+x-timezone: &timezone
+  TZ: Europe/Moscow
+
 services:
-  # === Traefik Reverse Proxy ===
   traefik:
     image: traefik:v2.9
     container_name: traefik
     command:
-      - --configFile=/traefik.yml
+      - --configFile=/etc/traefik/traefik.yml
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./traefik.yml:/traefik.yml
+      - ./traefik.yml:/etc/traefik/traefik.yml
       - ./acme.json:/acme.json
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     networks:
       - web
+    environment:
+      <<: *timezone
 
-  # === Backend API Service ===
   backend:
     container_name: backend
     build:
@@ -25,7 +28,9 @@ services:
     expose:
       - "5000"
     environment:
-      - APP_ENV=development
+      <<: *timezone
+      DB_DATA_DIR: /data
+      LOGS_DIR: /logs
     restart: unless-stopped
     networks:
       - web
@@ -50,7 +55,6 @@ services:
       - ./data:/data
       - ./logs:/logs
 
-  # === Frontend SPA Service ===
   frontend:
     container_name: frontend
     build:
@@ -59,10 +63,12 @@ services:
     expose:
       - "80"
     restart: unless-stopped
-    depends_on:
-      - backend
     networks:
       - web
+    environment:
+      <<: *timezone
+      DB_DATA_DIR: /data
+      LOGS_DIR: /logs
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`lonelinessgu.space`) && !PathPrefix(`/api`) && !PathPrefix(`/ws`)"
@@ -75,7 +81,6 @@ services:
       - ./data:/data
       - ./logs:/logs
 
-# === Сети ===
 networks:
   web:
     driver: bridge

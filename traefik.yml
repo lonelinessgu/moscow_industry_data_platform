@@ -18,7 +18,7 @@ http:
 certificatesResolvers:
   letsencryptresolver:
     acme:
-      email: # Write ur mail here
+      email: temiksp@gmail.com
       storage: /acme.json
       httpChallenge:
         entryPoint: web
